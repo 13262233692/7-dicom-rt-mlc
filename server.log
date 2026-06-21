@@ -1,0 +1,91 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------< com.oncology.radphys:dicom-rt-verification >-------------
+[INFO] Building DICOM-RT Independent Verification System 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot-maven-plugin:2.7.18:run (default-cli) > test-compile @ dicom-rt-verification >>>
+[INFO] 
+[INFO] --- maven-resources-plugin:3.2.0:resources (default-resources) @ dicom-rt-verification ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] Copying 1 resource
+[INFO] Copying 0 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.10.1:compile (default-compile) @ dicom-rt-verification ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-resources-plugin:3.2.0:testResources (default-testResources) @ dicom-rt-verification ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] skip non existing resourceDirectory D:\SOLO-0621-1\7-dicom-rt-mlc\src\test\resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.10.1:testCompile (default-testCompile) @ dicom-rt-verification ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] <<< spring-boot-maven-plugin:2.7.18:run (default-cli) < test-compile @ dicom-rt-verification <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot-maven-plugin:2.7.18:run (default-cli) @ dicom-rt-verification ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::               (v2.7.18)
+
+2026-06-22 06:56:48.934  INFO 16664 --- [           main] c.o.radphys.RtVerificationApplication    : Starting RtVerificationApplication using Java 11.0.31 on ZhuanZ with PID 16664 (D:\SOLO-0621-1\7-dicom-rt-mlc\target\classes started by ZhuanZ£¨ÎÞÃÜÂë£© in D:\SOLO-0621-1\7-dicom-rt-mlc)
+2026-06-22 06:56:48.934  INFO 16664 --- [           main] c.o.radphys.RtVerificationApplication    : No active profile set, falling back to 1 default profile: "default"
+2026-06-22 06:56:49.642  INFO 16664 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2026-06-22 06:56:49.646  INFO 16664 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-06-22 06:56:49.647  INFO 16664 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.83]
+2026-06-22 06:56:49.697  INFO 16664 --- [           main] o.a.c.c.C.[.[.[/rt-verification]         : Initializing Spring embedded WebApplicationContext
+2026-06-22 06:56:49.697  INFO 16664 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 737 ms
+2026-06-22 06:56:49.725  INFO 16664 --- [           main] c.o.radphys.buffer.LockFreeRingBuffer    : Initialized lock-free ring buffer with capacity 64, spin limit 1000
+2026-06-22 06:56:49.726  INFO 16664 --- [           main] c.o.r.f.SlidingWeightedAverageFilter     : Initialized sliding weighted average filter: window=32, decay=0.85, thresholdStdDevs=4.0
+2026-06-22 06:56:49.737  INFO 16664 --- [           main] c.o.r.mlc.MlcLeafInterferenceOperator    : MLC Leaf Interference Operator initialized: SAD=1000.0mm, ¦µ/2=2.5mm, WallAngle=8.5¡ã, MinGap=0.5mm, MinPenumbra=1.0mm, ResonanceTol=0.25mm, InterlockMargin=0.15mm
+2026-06-22 06:56:49.738  INFO 16664 --- [           main] c.o.r.mlc.MlcSafetyInterlockEngine       : MLC Safety Interlock Engine initialized. Session ID: 702c938f42964372
+2026-06-22 06:56:49.909  INFO 16664 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path '/rt-verification'
+2026-06-22 06:56:49.913  INFO 16664 --- [           main] c.o.radphys.RtVerificationApplication    : Started RtVerificationApplication in 1.212 seconds (JVM running for 1.411)
+2026-06-22 06:57:14.432  INFO 16664 --- [nio-8080-exec-1] o.a.c.c.C.[.[.[/rt-verification]         : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-06-22 06:57:14.432  INFO 16664 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-06-22 06:57:14.433  INFO 16664 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-06-22 06:57:44.240  INFO 16664 --- [nio-8080-exec-2] c.o.r.mlc.MlcSafetyInterlockEngine       : MLC Interlock State Change: IDLE ©¤©¤? ARMED | Session=702c938f42964372
+2026-06-22 06:57:44.240  INFO 16664 --- [nio-8080-exec-2] c.o.r.mlc.MlcSafetyInterlockEngine       : MLC Safety Interlock System ARMED. Beam permission GRANTED (conditional).
+2026-06-22 06:57:45.523  WARN 16664 --- [nio-8080-exec-3] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.HttpMediaTypeNotSupportedException: Content type 'application/octet-stream' not supported]
+2026-06-22 06:58:09.476  INFO 16664 --- [nio-8080-exec-5] c.o.r.mlc.MlcSafetyInterlockEngine       : MLC Safety Interlock System ARMED. Beam permission GRANTED (conditional).
+2026-06-22 06:58:10.130  WARN 16664 --- [nio-8080-exec-6] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.HttpMediaTypeNotSupportedException: Content type 'application/octet-stream' not supported]
+2026-06-22 06:58:10.194  WARN 16664 --- [nio-8080-exec-8] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.HttpMediaTypeNotSupportedException: Content type 'application/octet-stream' not supported]
+2026-06-22 06:58:53.665  INFO 16664 --- [nio-8080-exec-9] c.o.r.mlc.MlcSafetyInterlockEngine       : MLC Safety Interlock System ARMED. Beam permission GRANTED (conditional).
+2026-06-22 06:58:53.931  INFO 16664 --- [io-8080-exec-10] c.o.r.mlc.MlcSafetyInterlockEngine       : MLC Interlock State Change: ARMED ©¤©¤? MONITORING | Session=702c938f42964372
+2026-06-22 06:58:53.933 ERROR 16664 --- [io-8080-exec-10] c.o.r.mlc.MlcLeafInterferenceOperator    : ========== MLC SAFETY INTERLOCK TRIGGERED ==========
+  Control Point ID: 999
+  Safety Status:    MECHANICAL_COLLISION_IMMINENT
+  Violations Found: 1
+  Minimum Gap:      -1.0000 mm @ Leaf Pair 4
+  Interlock Msg:    MLC SAFETY INTERLOCK: Status=MECHANICAL_COLLISION_IMMINENT, Violations=1, MinGap=-1.0000mm @ Pair=4. Magnetron HV supply disabled, beam hold asserted.
+2026-06-22 06:58:53.934  WARN 16664 --- [io-8080-exec-10] c.o.r.mlc.MlcLeafInterferenceOperator    : MLC interference check took 2,427 ?s (2.43ms) - SLOW PERFORMANCE ALERT
+2026-06-22 06:58:53.934  INFO 16664 --- [io-8080-exec-10] c.o.r.mlc.MlcSafetyInterlockEngine       : MLC Interlock State Change: MONITORING ©¤©¤? INTERLOCK_TRIPPED | Session=702c938f42964372
+2026-06-22 06:58:53.934 ERROR 16664 --- [io-8080-exec-10] c.o.r.mlc.MlcSafetyInterlockEngine       : 
+¨X¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨[
+¨U       ??  MLC SAFETY INTERLOCK TRIPPED  ??                   ¨U
+¨d¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨g
+  Session:          702c938f42964372
+  ControlPoint:     999
+  Trip Timestamp:   2026-06-21T22:58:53.934291600Z
+  Min Gap:          -1.0000 mm @ Leaf #4
+  Violations:       1
+  Status:           MECHANICAL_COLLISION_IMMINENT
+  Beam Hold:        ACTIVE
+  Magnetron HV:     DISABLED
+  Reason:           MECHANICAL_COLLISION_IMMINENT | MinGap=-1.0000mm @Leaf4 | Type=PHYSICAL_LEAF_OVERLAP
+¨^¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨a
+2026-06-22 06:58:53.934  WARN 16664 --- [io-8080-exec-10] c.o.r.controller.DicomRtController       : MLC CONTROL POINT 999 REJECTED - Interlock: MECHANICAL_COLLISION_IMMINENT. MinGap=-1.0000mm @ Pair #4
+2026-06-22 06:58:54.018  INFO 16664 --- [nio-8080-exec-2] c.o.r.mlc.MlcSafetyInterlockEngine       : Interlock RESET requested by operator='PHYSICIST_TEST' [auth=PHYSICIST_OVERRIDE] | Previous state=INTERLOCK_TRIPPED
+2026-06-22 06:58:54.018  INFO 16664 --- [nio-8080-exec-2] c.o.r.mlc.MlcSafetyInterlockEngine       : MLC Interlock State Change: INTERLOCK_TRIPPED ©¤©¤? ARMED | Session=702c938f42964372
+2026-06-22 06:58:54.018  INFO 16664 --- [nio-8080-exec-2] c.o.r.mlc.MlcSafetyInterlockEngine       : ? MLC Safety Interlock RESET SUCCESSFUL. Beam authorization restored.
+^C

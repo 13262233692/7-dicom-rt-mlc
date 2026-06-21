@@ -4,10 +4,13 @@ import com.oncology.radphys.buffer.DoseSliceBufferManager;
 import com.oncology.radphys.dicom.RtDoseParser;
 import com.oncology.radphys.dicom.RtStructureSetParser;
 import com.oncology.radphys.filter.SlidingWeightedAverageFilter;
+import com.oncology.radphys.mlc.MlcSafetyInterlockEngine;
 import com.oncology.radphys.model.CalibrationPulse;
 import com.oncology.radphys.model.CalibrationPulseRequest;
 import com.oncology.radphys.model.RtDoseVolume;
 import com.oncology.radphys.model.RtStructureSet;
+import com.oncology.radphys.model.mlc.MlcInterferenceCheckResult;
+import com.oncology.radphys.model.mlc.MlcMotionVector;
 import com.oncology.radphys.websocket.DoseStreamWebSocketHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +38,7 @@ public class DicomRtController {
     private final RtStructureSetParser rtStructureSetParser;
     private final DoseSliceBufferManager bufferManager;
     private final DoseStreamWebSocketHandler webSocketHandler;
+    private final MlcSafetyInterlockEngine mlcInterlockEngine;
 
     @PostMapping("/upload/rtdose")
     public ResponseEntity<?> uploadRtDose(@RequestParam("file") MultipartFile file) {
@@ -257,6 +261,147 @@ public class DicomRtController {
             return ResponseEntity.badRequest()
                     .body(Map.of("success", false, "error", "Invalid levels format"));
 
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/mlc/arm")
+    public ResponseEntity<?> armMlcInterlock() {
+        try {
+            mlcInterlockEngine.armInterlockSystem();
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("state", mlcInterlockEngine.getCurrentState().name());
+            response.put("canDeliverBeam", mlcInterlockEngine.canDeliverBeam());
+            response.put("sessionId", Long.toHexString(mlcInterlockEngine.getSessionId()));
+            response.put("message", "MLC Safety Interlock System ARMED");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Failed to ARM MLC interlock", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/mlc/verify")
+    public ResponseEntity<?> verifyMlcMotionVector(@RequestBody MlcMotionVector motionVector) {
+        try {
+            if (motionVector.getControlPointId() == 0L) {
+                motionVector.setControlPointId(System.currentTimeMillis() / 1000L);
+            }
+
+            long verifyStart = System.nanoTime();
+            MlcSafetyInterlockEngine.InterlockState resultingState =
+                    mlcInterlockEngine.submitMotionVectorForVerification(motionVector);
+            long verifyEnd = System.nanoTime();
+
+            MlcInterferenceCheckResult lastResult = mlcInterlockEngine.getLastCheckResult();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("interlockState", resultingState.name());
+            response.put("interlockActive", mlcInterlockEngine.isBeamHoldAsserted());
+            response.put("magnetronHvDisabled", mlcInterlockEngine.isMagnetronHvDisabled());
+            response.put("canDeliverBeam", mlcInterlockEngine.canDeliverBeam());
+            response.put("checkDurationNanos", lastResult != null ? lastResult.getCheckDurationNanos() : (verifyEnd - verifyStart));
+
+            if (lastResult != null) {
+                response.put("minimumGapFoundMm", lastResult.getMinimumGapFoundMm());
+                response.put("minimumGapLeafPairIndex", lastResult.getMinimumGapLeafPairIndex());
+                response.put("totalLeafPairsChecked", lastResult.getTotalLeafPairsChecked());
+                response.put("violationsCount", lastResult.getViolationsCount());
+                response.put("safetyStatus", lastResult.getSafetyStatus().name());
+                response.put("violations", lastResult.getViolations());
+
+                if (lastResult.isInterlockActive()) {
+                    response.put("interlockMessage", lastResult.getInterlockMessage());
+                    response.put("interlockReason", mlcInterlockEngine.getLastInterlockReason());
+
+                    log.warn("MLC CONTROL POINT {} REJECTED - Interlock: {}. MinGap={}mm @ Pair #{}",
+                            motionVector.getControlPointId(),
+                            lastResult.getSafetyStatus(),
+                            String.format("%.4f", lastResult.getMinimumGapFoundMm()),
+                            lastResult.getMinimumGapLeafPairIndex());
+
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+                }
+            }
+
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalStateException ise) {
+            log.warn("MLC verify rejected (state): {}", ise.getMessage());
+            return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body(Map.of(
+                    "success", false,
+                    "interlockState", mlcInterlockEngine.getCurrentState().name(),
+                    "error", "MLC Interlock not ARMED: " + ise.getMessage()
+            ));
+        } catch (Exception e) {
+            log.error("MLC motion vector verification exception", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/mlc/reset")
+    public ResponseEntity<?> resetMlcInterlock(@RequestBody Map<String, String> request) {
+        try {
+            String operatorId = request.getOrDefault("operatorId", "LOCAL_PHYSICIST");
+            String authToken = request.getOrDefault("authToken", "PHYSICIST_OVERRIDE");
+
+            boolean resetOk = mlcInterlockEngine.resetInterlock(operatorId, authToken);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", resetOk);
+            response.put("state", mlcInterlockEngine.getCurrentState().name());
+            response.put("beamHoldCleared", !mlcInterlockEngine.isBeamHoldAsserted());
+            response.put("magnetronHvRestored", !mlcInterlockEngine.isMagnetronHvDisabled());
+            response.put("operator", operatorId);
+
+            if (resetOk) {
+                response.put("message", "MLC Interlock RESET. Beam authorization restored.");
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("message", "MLC Interlock reset DENIED. Invalid credentials.");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/mlc/status")
+    public ResponseEntity<?> getMlcInterlockStatus() {
+        try {
+            MlcInterferenceCheckResult lastResult = mlcInterlockEngine.getLastCheckResult();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("sessionId", Long.toHexString(mlcInterlockEngine.getSessionId()));
+            response.put("interlockState", mlcInterlockEngine.getCurrentState().name());
+            response.put("beamHoldAsserted", mlcInterlockEngine.isBeamHoldAsserted());
+            response.put("magnetronHvDisabled", mlcInterlockEngine.isMagnetronHvDisabled());
+            response.put("canDeliverBeam", mlcInterlockEngine.canDeliverBeam());
+            response.put("totalViolationsThisSession", mlcInterlockEngine.getTotalViolationsThisSession());
+            response.put("checkHistorySize", mlcInterlockEngine.getCheckHistorySize());
+            response.put("lastInterlockReason", mlcInterlockEngine.getLastInterlockReason());
+
+            if (lastResult != null) {
+                Map<String, Object> lastCheck = new HashMap<>();
+                lastCheck.put("controlPointId", lastResult.getControlPointId());
+                lastCheck.put("safetyStatus", lastResult.getSafetyStatus().name());
+                lastCheck.put("minimumGapFoundMm", lastResult.getMinimumGapFoundMm());
+                lastCheck.put("minimumGapLeafPairIndex", lastResult.getMinimumGapLeafPairIndex());
+                lastCheck.put("violationsCount", lastResult.getViolationsCount());
+                lastCheck.put("checkDurationNanos", lastResult.getCheckDurationNanos());
+                lastCheck.put("interlockActive", lastResult.isInterlockActive());
+                response.put("lastCheck", lastCheck);
+            }
+
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("success", false, "error", e.getMessage()));
