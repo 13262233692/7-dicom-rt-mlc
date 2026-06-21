@@ -1,0 +1,37 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /rt-verification
+
+spring:
+  application:
+    name: dicom-rt-verification
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: UTC
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 200MB
+
+rt-verification:
+  dicom:
+    stream-buffer-size: 16777216
+    max-dicom-size: 536870912
+  dose:
+    sliding-filter-window: 32
+    filter-decay-factor: 0.85
+    noise-threshold-standard-deviations: 4.0
+  buffer:
+    slice-ring-capacity: 64
+    lock-free-spin-limit: 1000
+  websocket:
+    binary-buffer-size: 1048576
+    idle-timeout: 600000
+
+logging:
+  level:
+    com.oncology.radphys: INFO
+    com.oncology.radphys.dicom: DEBUG
+    com.oncology.radphys.buffer: DEBUG
